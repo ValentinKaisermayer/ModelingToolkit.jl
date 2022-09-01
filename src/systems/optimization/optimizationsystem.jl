@@ -27,7 +27,7 @@ struct OptimizationSystem <: AbstractTimeIndependentSystem
     var_to_name::Any
     observed::Vector{Equation}
     """List of constraint equations of the system."""
-    constraints::Vector # {Union{Equation,Inequality}}
+    constraints::Vector{Union{Equation,Inequality}}
     """The unique name of the system."""
     name::Symbol
     """The internal systems."""
@@ -142,11 +142,9 @@ namespace_constraint(ineq::Inequality, sys) = namespace_inequality(ineq, sys)
 function namespace_inequality(ineq::Inequality, sys, n = nameof(sys))
     _lhs = namespace_expr(ineq.lhs, sys, n)
     _rhs = namespace_expr(ineq.rhs, sys, n)
-    Inequality(
-        _lhs, 
-        _rhs,
-        ineq.relational_op,
-    )
+    Inequality(_lhs,
+               _rhs,
+               ineq.relational_op)
 end
 
 function namespace_constraints(sys::OptimizationSystem)
