@@ -16,7 +16,7 @@ op = a*(y-x) + x*(b-z)-y + x*y - c*z
 @named os = OptimizationSystem(op, [x,y,z], [a,b,c])
 ```
 """
-struct OptimizationSystem <: AbstractTimeIndependentSystem
+struct OptimizationSystem <: AbstractOptimizationSystem
     """Objective function of the system."""
     op::Any
     """Unknown variables."""
@@ -25,6 +25,7 @@ struct OptimizationSystem <: AbstractTimeIndependentSystem
     ps::Vector
     """Array variables."""
     var_to_name::Any
+    """Observed variables."""
     observed::Vector{Equation}
     """List of constraint equations of the system."""
     constraints::Vector{Union{Equation,Inequality}}
@@ -211,12 +212,14 @@ function DiffEqBase.OptimizationProblem{iip}(sys::OptimizationSystem, u0map,
                           expression = Val{false})
 
     obj_expr = toexpr(equations(sys))
-    pairs_arr = p isa SciMLBase.NullParameters ?
-                [Symbol(_s) => Expr(:ref, :x, i) for (i, _s) in enumerate(dvs)] :
-                [
-        [Symbol(_s) => Expr(:ref, :x, i) for (i, _s) in enumerate(dvs)]...,
-        [Symbol(_p) => p[i] for (i, _p) in enumerate(ps)]...,
-    ]
+    pairs_arr = if p isa SciMLBase.NullParameters
+        [Symbol(_s) => Expr(:ref, :x, i) for (i, _s) in enumerate(dvs)]
+    else
+        vcat(
+            [Symbol(_s) => Expr(:ref, :x, i) for (i, _s) in enumerate(dvs)],
+            [Symbol(_p) => p[i] for (i, _p) in enumerate(ps)],
+        )
+    end
     rep_pars_vals!(obj_expr, pairs_arr)
     if grad
         grad_oop, grad_iip = generate_gradient(sys, checkbounds = checkbounds,

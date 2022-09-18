@@ -84,6 +84,7 @@ abstract type AbstractTimeDependentSystem <: AbstractSystem end
 abstract type AbstractTimeIndependentSystem <: AbstractSystem end
 abstract type AbstractODESystem <: AbstractTimeDependentSystem end
 abstract type AbstractMultivariateSystem <: AbstractSystem end
+abstract type AbstractOptimizationSystem <: AbstractTimeIndependentSystem end
 
 """
 $(TYPEDSIGNATURES)
